@@ -1,0 +1,45 @@
+1. Look up the specs for the totient nodes. Having read the Roofline paper,
+   draw a roofline diagram for one totient node (assuming only the
+   host cores are used, for the moment).  How do things change with
+   the addition of the two Phi boards?
+
+   ANSWER:
+
+   http://download.intel.com/support/processors/xeon/sb/xeon_E5-2600.pdf
+   http://ark.intel.com/products/64594/Intel-Xeon-Processor-E5-2620-15M-Cache-2_00-GHz-7_20-GTs-Intel-QPI
+
+   120 Gflops, 42.6 GB/s
+   See roofline.png
+   With the two boards, it will reach the intersection point at a higher OI b/c the peak performance will be higher.
+
+2. What is the difference between two cores and one core with
+   hyperthreading?
+
+   ANSWER:
+
+   Two cores- each processor has two separate cores, each executing instructions, potentially with a shared cache between the cores.
+   One core w/ hyperthreading- same abstraction as two cores, but virtual cores rather than physical cores, so the physical resources
+    of the CPU are shared.
+
+3. Do a Google search to find a picture of how memories are arranged
+   on the Phi architecture.  Describe the setup briefly in your own
+   words.  Is the memory access uniform or non-uniform?
+
+   ANSWER:
+
+   Memory is arranged in a ring, with the cores and L2 cache on the outside of the ring, and a tag directory on the inside of the ring. Memory access is uniform.
+
+4. Consider the parallel dot product implementations suggested in the
+   slides.  As a function of the number of processors, the size of the
+   vectors, and typical time to send a message, can you predict the
+   speedup associated with parallelizing a dot product computation?
+   [Note that dot products have low arithmetic intensity -- the
+    roofline model may be useful for reasoning about the peak
+    performance for computing pieces of the dot product]
+
+  ANSWER:
+
+  p processors, n vector size, t message time. If it takes 1 time unit to multiply or add,
+  serial time = 2n
+  parallel time = 2n/p, but w/ time tp to send the messages, so 2n/p + tp
+  speedup = 2n / (2n/p + tp)

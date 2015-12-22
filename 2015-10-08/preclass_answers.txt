@@ -1,0 +1,51 @@
+0.  How much time did you spend on this pre-class exercise, and when?
+    
+    ANSWER:
+
+    1-2 hours, end of semester
+
+1.  What are one or two points that you found least clear in the
+    10/08 slide decks (including the narration)?
+
+    ANSWER:
+
+    Slides were pretty clear.
+
+2.  Now that we are now basically a third of the way into the
+    semester, and are (mostly) settled into the steady pace of things,
+    I would appreciate your feedback on what is working well or poorly
+    about the class.  Comments on things I can reasonably change are
+    particularly useful -- venting about the cluster, for example, is
+    understandable but doesn't help me that much in adjusting!
+
+    ANSWER:
+
+    Lecture slides are laid out quite clearly. I like how Git is used, but it makes it difficult to
+    receive feedback on performance- having some indicator of grades would be really nice during the semester.
+
+3.  The ring demo implements the protocol described in the particle
+    systems slide deck from 9/15:
+
+    http://cornell-cs5220-f15.github.io/slides/2015-09-15-particle.html#/11
+
+    a) In your own words, describe what ring.c is doing.
+
+      ANSWER:
+
+      ring.c seems to be using the protocol in the slide deck previously shown to pass buffers
+      between different processors and calculate the sum of the absolute values of all of the values
+      in the two buffers belonging to a given processor at each step as the buffers move around.
+
+    b) How might you modify the code to have the same computational
+       pattern, but using non-blocking communication rather than
+       MPI_Sendrecv?  Note that according to the MPI standard,
+       one isn't supposed to read from a buffer that is being
+       handled by a non-blocking send, so it is probably necessary
+       to use three temporary buffers rather than the current two.
+
+      ANSWER:
+
+      Set up a third temporary array that you compute the local interactions with the local data at the given
+      rank with. Asynchronously send data from the send buffer to the next rank and into the receive buffer from the previous rank
+      while you're computing interactions. Wait until computing interactions is finished, move the data from the temp buffer
+      into the send buffer, and read in the data from the recv buffer into the temp buffer. 

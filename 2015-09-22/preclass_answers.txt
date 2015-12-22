@@ -1,0 +1,96 @@
+0.  How much time did you spend on this pre-class exercise, and when?
+
+    ANSWER:
+
+    ~1-2 hours, end of semester
+
+1.  What are one or two points that you found least clear in the
+    9/22 slide decks (including the narration)?
+
+    ANSWER:
+
+    Slides were pretty clear
+
+2.  The pthread_mc.c file in the demo subdirectory runs a Monte Carlo
+    simulation to estimate the expected value of a uniform random
+    variable.  The "-p" option sets the number of processors used,
+    while "-b" sets the number of trials between synchronizations.
+
+    a) Write a model for the run time for this simulation code in
+       terms of the number of trials (N), batch size (B),
+       number of processors (p), time per trial (t_trial), 
+       and time to update the global counters in the critical 
+       section (t_update).
+
+       ANSWER:
+
+       If it's following the pseudocode for the MC method presented in the slides-
+       In the overall parallel section of the code, it takes t_trial time per trial for N trials,
+       but the work can be divided over the p processors, so the parallel time can be
+       (N * t_trial)/p
+       In the critical section of the code, though, it takes t_update time, and it needs
+       to do this every N/B trials, so the time for this is N/B * t_update
+       So the total time is (N * t_trial)/p + N/B * t_update
+
+    b) Run the code with a few different parameter values in order
+       to estimate N, t_trial, and t_update for this code on
+       a totient compute node.
+
+       ANSWER:
+
+       ./pthread_mc.x -b 1 -p 1 => 1 threads (pthreads): 3.500000e-05 s
+       B=1, p=1-> N * t_trial + N * t_update=time=3.500000e-05 s
+       N = 1 trials
+       t_trial + t_update = 3.500000 x 10^-5
+       ./pthread_mc.x -b 10 -p 1 =>   1 threads (pthreads): 3.939250e-01 s
+       N*t_trial + N/10 * t_update = 3.939250e-01 s
+       N = 10000010 trials
+       t_trial + 1/10 * t_update = 3.939246 × 10^-8
+       ./omp_mc.x -b 100 -p 1 =>  1 threads (pthreads): 2.452870e-01 s
+       N*t_trial + N/100 * t_update = 2.452870e-01 s
+       N = 10000100 trials
+       t_trial + 1/100 * t_update = 2.452845 x 10^-8
+       ./omp_mc.x -b 1000 -p 1 => 1 threads (pthreads): 2.300000e-01 s
+       N*t_trial + N/1000 * t_update = 2.300000e-01 s
+       N = 10001000 trials
+       t_trial + 1/1000 * t_update = 2.29977 × 10^-8
+       ./omp_mc.x -b 1 -p 10 => 10 threads (pthreads):  2.578777e+00 s
+       (N*t_trial)/10 + N * t_update = 2.578777e+00 s
+       N = 10000008 trials
+       t_trial + 10 * t_update = 2.57877 × 10^-6
+       ./omp_mc.x -b 1 -p 100 => 100 threads (pthreads): 2.199268e+00 s
+       (N*t_trial)/100 + N * t_update = 2.199268e+00 s
+       N = 10000098 trials
+       t_trial + 100 * t_update = 0.000021992
+
+       Summarized-
+        t_trial + t_update = 3.500000 x 10^-5
+        t_trial + 1/10 * t_update = 3.939246 × 10^-8
+        t_trial + 1/100 * t_update = 2.452845 x 10^-8
+        t_trial + 1/1000 * t_update = 2.29977 × 10^-8
+        t_trial + 10 * t_update = 2.57877 × 10^-6
+        t_trial + 100 * t_update = 0.000021992
+
+        Perform regression?
+
+
+
+    c) Based on your model, suggest a strategy for choosing the batch
+       size.  How might you generalize this strategy to automatically
+       choose batch sizes for different types of computational
+       experiments?
+
+       ANSWER:
+
+       - Choose the largest batch possible b/c this minimizes the N/B fraction
+       - See how N/B affects overall time in different computational models and
+         choose larger/smaller values of B accordingly
+    
+3.  In the workq subdirectory of this directory, there is a basic work
+    queue implementation.  Following the strategy outlined in the
+    slides, add synchronization calls in the locations marked TODO.
+    You should run the code to make sure it behaves as expected!
+
+    ANSWER:
+
+    See code

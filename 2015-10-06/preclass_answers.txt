@@ -1,0 +1,130 @@
+0.  How much time did you spend on this pre-class exercise, and when?
+
+    ANSWER:
+
+    ~1 hour, end of semester
+
+1.  What are one or two points that you found least clear in the
+    10/06 slide decks (including the narration)?
+
+    ANSWER:
+
+    Wasn't really sure about the connection b/w the network topology and
+    MPI notes
+
+2.  In the upcoming lecture (10/8), we will discuss how to model
+    latency and bandwidth of MPI sends and receives using the
+    ping-pong benchmark briefly described in the current demo.
+    We would like to understand the difference between different
+    MPI implementations (and make sure we know how to run MPI codes).
+
+    a) Make sure the cs5220 module is loaded and type "which mpicc";
+       if everything is correct, you should see the Intel MPI version
+       (under /usr/local/intel).  Using this version of MPI and the
+       default PBS files, run the pingpong examples (demo/pingpong).
+
+       ANSWER: 
+       ping-2chip.pbs
+        1 8.03435e-07
+        1001 1.30302e-06
+        2001 1.59985e-06
+        3001 2.13452e-06
+        4001 2.44724e-06
+        5001 2.79464e-06
+        6001 3.29322e-06
+        7001 3.66557e-06
+        8001 4.01294e-06
+        9001 4.34523e-06
+        10001 4.70551e-06
+        11001 5.20187e-06
+        12001 5.48426e-06
+        13001 5.85402e-06
+        14001 6.28879e-06
+        15001 6.63626e-06
+        16001 7.06658e-06
+
+       ping-2core.pbs
+        1 3.02045e-07
+        1001 4.06154e-07
+        2001 4.81175e-07
+        3001 5.63995e-07
+        4001 6.27185e-07
+        5001 7.23445e-07
+        6001 8.09735e-07
+        7001 9.01204e-07
+        8001 9.9133e-07
+        9001 1.10255e-06
+        10001 1.22117e-06
+        11001 1.33043e-06
+        12001 1.41973e-06
+        13001 1.51524e-06
+        14001 1.62842e-06
+        15001 1.72088e-06
+        16001 1.82101e-06
+
+    b) Now do "module load openmpi/1.10.0-icc-15.0.3" after loading
+       the CS 5220 module.  Check by typing "which mpicc" that you
+       are now using a different version of mpicc.  Compile with
+       OpenMPI, and re-run the on-node tests using OpenMPI (note:
+       you will have to add a module load to the start of the PBS
+       scripts).  How do the timings differ from the Intel MPI timings?
+
+       ANSWER:
+
+       Modified from the pbs files suffixed with ompi, module changed from gcc to icc.
+
+       ping-2chip
+        1 4.45654e-07
+        1001 1.33371e-06
+        2001 1.68855e-06
+        3001 2.02788e-06
+        4001 2.59227e-06
+        5001 4.50706e-06
+        6001 4.02853e-06
+        7001 4.36911e-06
+        8001 4.91302e-06
+        9001 5.08909e-06
+        10001 5.40667e-06
+        11001 6.18787e-06
+        12001 6.39357e-06
+        13001 7.01867e-06
+        14001 7.46836e-06
+        15001 7.75632e-06
+        16001 7.54246e-06
+
+       ping-2core
+        1 4.76381e-07
+        1001 1.42039e-06
+        2001 1.75652e-06
+        3001 2.09718e-06
+        4001 2.85633e-06
+        5001 4.63652e-06
+        6001 4.38242e-06
+        7001 4.38967e-06
+        8001 4.92912e-06
+        9001 5.0183e-06
+        10001 5.30471e-06
+        11001 5.81834e-06
+        12001 6.12558e-06
+        13001 6.38542e-06
+        14001 6.62383e-06
+        15001 7.25794e-06
+        16001 7.58484e-06
+
+        Timings are similar- ICC seems to take a bit longer?
+
+    c) When running at the peak rate (e.g. 16 double precision
+       flops/cycle), how many (double precision) floating point ops
+       could two totient cores do in the minimal time required for one
+       MPI message exchange?
+
+       ANSWER:
+
+       16 ops/cycle * 2*2.00 GHz = 16 * 4 * 10^9 ops/second = 6.4 * 10^10 ops/second
+       http://cornell-cs5220-f15.github.io/slides/2015-10-08-model.html#/7
+       Slope = 0.28 + 0.097 * kB us
+       kB per message = 16 bytes = 0.015625 kB (back and forth, MPI_DOUBLE each way)
+       0.28 + 0.097 * 0.015625 = 0.281515625 us = 0.281515625 * 10^-6 seconds
+       6.4 * 10^10 ops/second * 0.281515625 * 10^-6 seconds = 18017 ops
+
+ 

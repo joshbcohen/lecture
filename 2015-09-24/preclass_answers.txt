@@ -1,0 +1,102 @@
+0.  How much time did you spend on this pre-class exercise, and when?
+    
+    ANSWER:
+    
+    ~1-2 hours, end of semester
+
+1.  What are one or two points that you found least clear in the
+    9/24 slide decks (including the narration)?
+
+    ANSWER:
+
+    Slides were pretty clear.
+
+2.  The omp_mc.c file in the demo subdirectory runs a Monte Carlo
+    simulation to estimate the expected value of a uniform random
+    variable.  The "-p" option sets the number of processors used,
+    while "-b" sets the number of trials between synchronizations.
+
+    a) Write a model for the run time for this simulation code in
+       terms of the number of trials (N), number of processors (p),
+       time per trial (t_trial), and time to update the global
+       counters in the critical section (t_update).
+
+       ANSWER:
+
+
+       In the overall parallel section of the code, it takes t_trial time per trial for N trials,
+       but the work can be divided over the p processors, so the parallel time can be
+       (N * t_trial)/p
+       In the critical section of the code, it takes t_update time, and it needs
+       to do this every N/B trials, so the time for this is N/B * t_update.
+       So the total time is (N * t_trial)/p + N/B * t_update
+       The model follows the same structure as last time, but uses OpenMP directives instead of pthread stuff directly.
+
+    b) Run the code with a few different parameter values in order
+       to estimate N, t_trial, and t_update for this code on
+       a totient compute node.
+
+       ANSWER:
+
+       ./omp_mc.x -b 1 -p 1 =>    2 threads (OpenMP): 1.128655e+00 s
+       B=1, p=1-> N * t_trial + N * t_update=time=1.128655e+00 s
+       N = 10000001 trials
+       t_trial + t_update = 1.12865 × 10^-7
+       ./omp_mc.x -b 10 -p 1 =>   2 threads (OpenMP): 4.462690e-01 s
+       N*t_trial + N/10 * t_update = 4.462690e-01 s
+       N = 10000020 trials
+       t_trial + 1/10 * t_update = 4.462681 × 10^-8
+       ./omp_mc.x -b 100 -p 1 =>  2 threads (OpenMP): 1.292489e-01 s
+       N*t_trial + N/100 * t_update = 1.292489e-01 s
+       N = 10000200 trials
+       t_trial + 1/100 * t_update = 1.29246 × 10^-8
+       ./omp_mc.x -b 1000 -p 1 => 2 threads (OpenMP): 1.187642e-01 s
+       N*t_trial + N/1000 * t_update = 1.187642e-01 s
+       N = 10002000 trials
+       t_trial + 1/1000 * t_update = 1.1874 × 10^-8
+       ./omp_mc.x -b 1 -p 10 => 2 threads (OpenMP): 1.005039e+00 s
+       (N*t_trial)/10 + N * t_update = 1.005039e+00 s
+       N = 10000001 trials
+       t_trial + 10 * t_update = 1.005 × 10^-6
+       ./omp_mc.x -b 1 -p 100 => 2 threads (OpenMP): 1.108758e+00 s
+       (N*t_trial)/100 + N * t_update = 1.108758e+00 s
+       N = 10000001 trials
+       t_trial + 100 * t_update = 0.00001108757889
+
+       Summarized-
+        t_trial + t_update = 1.12865 × 10^-7
+        t_trial + 1/10 * t_update = 4.462681 × 10^-8
+        t_trial + 1/100 * t_update = 1.29246 × 10^-8
+        t_trial + 1/1000 * t_update = 1.1874 × 10^-8
+        t_trial + 10 * t_update = 1.005 × 10^-6
+        t_trial + 100 * t_update = 0.00001108757889
+
+        Perform regression?
+
+    c) Based on your model, suggest a strategy for choosing the batch
+       size.  How might you generalize this strategy to automatically
+       choose batch sizes for different types of computational
+       experiments?
+
+       ANSWER:
+
+       - Choose the largest batch possible b/c this minimizes the N/B fraction
+       - See how N/B affects overall time in different computational models and
+         choose larger/smaller values of B accordingly
+
+3.  The "OpenMP pitfalls" paper describes some common pitfalls (both
+    performance and correctness) in OpenMP codes.  Go through the
+    checklist in the paper for omp_mc.c.  What performance mistakes
+    are there in the demonstration implementation?
+
+    ANSWER:
+
+    - Potentially the mistake of using critical when atomic would be sufficient. In thread_main, there is a
+      #pragma omp critical, but in that critical section, the only operations that are really happening are 
+      += and ||=, so it might be better to restructure the code to use all atomics or a shorter section in the critical,
+      since atomics are faster. Although, since there are multiple of these operations happening in the critical section, 
+      and some of them are complicated (i.e. is_converged), this might not be possible for all.
+    - is_converged is a complicated function in general, and is in the critical section- could maybe shorten or restructure
+      this part of the code in the critical section
+    - The reads from result within thread_main aren't completely protected, so it's possible that accessing the values
+      from it can cause state to go out of sync

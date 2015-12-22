@@ -1,0 +1,84 @@
+Pre-Class Questions:
+
+Consider the following naive row-based N x N matmul (matrix multiplication):
+
+for (i = 0; i < N; i++){
+   for (j = 0; j < N; j++){
+      tmp = 0
+      for (k = 0; k < N; k++)
+         tmp += A[i,k] * B[k,j]
+   }
+      C[i,j] = tmp
+}
+
+Suppose data is in double-precision floating point. We are interested in
+estimating the memory-based arithmetic intensity (AI) of this code. The
+memory-based AI is defined that (# flops) / (# bytes transferred between memory
+and cache), and depends on the cache size. Suppose the cache uses a
+least-recently-used (LRU) policy for deciding which data to flush when moving
+something into an already-full cache.
+
+1. Suppose 16N is significantly larger than the size of our L3 cache. What is
+the memory-based AI of this code? (Hint: What is the memory-based AI of just the
+innermost loop?)
+
+ANSWER:
+
+The innermost loop just requires reading in data from memory. Each array is reading in
+N elements from memory, where each element has a size of 8 bytes, for a total of 16N bytes
+read in from memory (because the cache can't hold these arrays directly). There are 2N FLOPS in
+this operation- N adds and N multiplies, for 2N flops. This yields an AI of 2N/16N = 1/8
+
+2. Now suppose that the cache is substantially larger than 16N, but
+substantially smaller than 8N^2. What is the AI now?
+
+ANSWER:
+
+You still can't store an entire matrix in the cache, but you can now store part of the operation- for example, you can keep a
+row of A in the cache while reading in a column of B into the cache for all columns of B, then read in another row of A for all the
+columns of B again, etc. This means that only 8N bytes needs to be read in for the innermost loop, so the AI is 1/4 now. 
+
+3. Now suppose the cache is large enough to hold all of A, B, and C. What is the
+AI now? (Hint: Writing to a byte of memory not already in the cache incurs two
+memory transfers: one to move the data to the cache for writing, and one to move
+the written data back to main memory.)
+
+ANSWER:
+
+Matmul requires 2N^3 FLOPS for the N^3 multiplies and the N^3 adds that it performs. A and B each require 8N^2 bytes to be read into the
+cache, and writing back C requires 16N^2 bytes because of the two memory transfers, for the 
+total amount of memory transferred = 8N^2 + 8N^2 + 16N^2 = 32N^2. This yields an AI of 2N^3 / 32N^2 = N/16
+
+4. Cache overflowing. On my CPU (Intel i7-4700 HQ), L1, L2, and L3 caches are 32
+KB, 256 KB, and 6 MB respectively. What is the largest problem size N that will
+fit in each cache? What is the arithmetic intensity associated with each problem
+size?
+
+ANSWER:
+
+32N^2 bytes required to be moved b/w cache and memory.
+L1 cache- 32 KB = 32 * 2^10 bytes = 32768 bytes; N = sqrt(32768 / 32) = 32; AI = 2
+L2 cache- 256 KB = 262144 bytes; N ≈ 90.51; AI ≈ 5.66
+L3 cache- 6 MB = 6 * 2^20 bytes = 6291456 bytes; N ≈ 443.405; AI ≈ 27.7
+
+5. My CPU has 4 cores, each of which can do 8 fused multiply-adds per cycle, has
+a clock rate of 2.4 GHz, and a memory bandwidth of 25.6 GB/s. At what arithmetic
+intensity does my machine become CPU-bound?
+
+ANSWER:
+
+Peak flop rate- frequency * cores * instructions/cycle = 2.4 * 8 * 4 = 76.8 GFLOPs 
+AI 76.8 GFLOPs / 25.6 GB/s = 3
+
+6. So, for what size range for N will naive matmul be CPU-bound on my machine?
+
+N = 1 to 48
+
+
+7. So, what will a plot of Flops/sec vs N look like?
+
+ANSWER:
+
+Roofline plot
+ _
+/
